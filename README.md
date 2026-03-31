@@ -8,6 +8,7 @@
 > **Industrial APIs in minutes, not months** — Turn your PLCs into modern APIs instantly
 
 **Developer:** Newton Kamau
+
 **Platform:** Industrial IoT, PLC APIs  
 ---
 
