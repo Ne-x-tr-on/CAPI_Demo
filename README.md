@@ -10,6 +10,7 @@
 **Developer:** Newton Kamau
 
 **Platform:** Industrial IoT, PLC APIs  
+
 ---
 
 ## 📋 Table of Contents
