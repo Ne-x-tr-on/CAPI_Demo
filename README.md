@@ -106,59 +106,53 @@ Get your base URL and API key. Query live data and historical trends instantly.
 ---
 
 ## Infrastructure Architecture
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                           YOUR FACTORY NETWORK                                              │
-│  ┌────────────────────┐    ┌────────────────────┐    ┌────────────────────┐                                 │
-│  │       PLC 1        │    │       PLC 2        │    │       PLC N        │                                 │
-│  │  Siemens S7-1500   │    │ Allen-Bradley      │    │  Modbus Device     │                                 │
-│  │  192.168.1.10      │    │  192.168.1.20      │    │  192.168.1.30      │                                 │
-│  │  Tags: 24          │    │  Tags: 42          │    │  Tags: 16          │                                 │
-│  └─────────┬──────────┘    └─────────┬──────────┘    └─────────┬──────────┘                                 │
-│            │                          │                          │                                            │
-│            └──────────────────────────┼──────────────────────────┘                                            │
-│                                       │                                                                       │
-└───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┘
-                                        │
-                                        ▼
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                           CAPI ENGINE SERVER                                                │
-│                                    (Rust High-Performance Backend)                                          │
-│                                                                                                             │
-│  ┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐ │
-│  │                              API GATEWAY LAYER (Actix-web)                                            │ │
-│  │  ┌──────────────────────────┐  ┌──────────────────────────┐  ┌──────────────────────────┐            │ │
-│  │  │      GraphQL API         │  │        REST API          │  │     WebSocket API        │            │ │
-│  │  │      :8080/graphql       │  │       :8080/rest         │  │       :8080/ws           │            │ │
-│  │  └──────────────────────────┘  └──────────────────────────┘  └──────────────────────────┘            │ │
-│  └───────────────────────────────────────────────────────────────────────────────────────────────────────┘ │
-│                                                                                                             │
-│  ┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐ │
-│  │                              PLC PROTOCOL ADAPTERS                                                    │ │
-│  │  Modbus │ OPC-UA │ Siemens S7 │ Allen-Bradley │ Mitsubishi FX │ Profibus                              │ │
-│  └───────────────────────────────────────────────────────────────────────────────────────────────────────┘ │
-│                                                                                                             │
-│  ┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐ │
-│  │                              BUSINESS LOGIC LAYER                                                     │ │
-│  │  Tag Discovery │ Polling Scheduler │ Data Aggregation │ Auth │ Rate Limiting │ Audit Logging         │ │
-│  └───────────────────────────────────────────────────────────────────────────────────────────────────────┘ │
-│                                                                                                             │
-│  ┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐ │
-│  │                              CACHE & QUEUE LAYER                                                      │ │
-│  │  Redis Cache │ Message Queue │ In-Memory Store                                                       │ │
-│  └───────────────────────────────────────────────────────────────────────────────────────────────────────┘ │
-└────────────────────────────────────────────────────────────────────┬────────────────────────────────────────┘
-                                                                     │
-                                                                     ▼
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                        POSTGRES + TIMESCALEDB                                              │
-│  Time-series tag values │ Aggregates │ PLC configs │ Users │ API keys │ Alerts                             │
-└────────────────────────────────────────────────────────────────────┬────────────────────────────────────────┘
-                                                                     │
-                                                                     ▼
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                         YOUR APPLICATIONS                                                   │
-│  Web Dashboard │ Mobile App │ Data Science │ Alerting │ MQTT │ Grafana │ Custom Clients                    │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+### System Architecture Overview
+
+| Layer | Components | Technologies | Purpose |
+|-------|------------|--------------|---------|
+| **Factory Layer** | Siemens S7-1500 • Allen-Bradley CompactLogix • Mitsubishi FX • Modbus Devices • OPC-UA Servers | Profinet • EtherNet/IP • Modbus TCP/RTU • OPC-UA • S7 Protocol | Industrial controllers providing real-time process data |
+| **Protocol Adapters** | Modbus TCP/RTU Driver • OPC-UA Client • Siemens S7 Driver • Allen-Bradley CIP • Mitsubishi MC Protocol | tokio-modbus • opcua-client • s7-comm • ethernet-ip • mitsubishi-mc | Protocol-specific communication bridges converting industrial protocols to internal data format |
+| **Polling Engine** | Tag Scheduler • Priority Manager • Retry Handler • Connection Pool | Tokio async runtime • Channel-based messaging • Exponential backoff | Scheduled reading of PLC tags with configurable intervals, priorities, and automatic reconnection |
+| **API Gateway** | GraphQL Endpoint • REST API • WebSocket Server • Rate Limiter • Auth Middleware | Actix-web • async-graphql • JWT • API Keys • RBAC | Unified entry point handling all client requests with authentication, rate limiting, and request routing |
+| **Business Logic** | Tag Management • Data Aggregation • Alert Engine • Audit Logger • Schema Generator | Rust business layer • Rule engine • TimescaleDB continuous aggregates | Core application logic including tag discovery, data transformation, alert evaluation, and audit trail |
+| **Cache & Queue** | Live Value Cache • Write Buffer • Session Store • Rate Limit Counter | Redis • In-memory hashmap • Channel buffers • Connection pooling | High-performance caching for hot data, buffering writes, and managing active sessions |
+| **Storage Layer** | Time-Series Data • Aggregates • Configuration • Auth Data • Alert History | PostgreSQL • TimescaleDB extension • JSONB • Full-text search | Persistent storage with time-series optimization for historical data, rollups, and system configuration |
+| **Client Layer** | Web Dashboard • Mobile App • Data Science • Alerting • MQTT Bridge • Grafana | React • React Native • Python • Webhooks • Slack/Teams • Prometheus | Consumer applications accessing data via APIs for visualization, analytics, automation, and integration |
+
+### Data Flow
+
+| Step | Source | Destination | Data | Description |
+|------|--------|-------------|------|-------------|
+| 1 | PLC | Polling Engine | Raw tag values | Polling engine reads tags at configured intervals (100ms-60s) |
+| 2 | Polling Engine | In-Memory Cache | Current values | Latest values cached for instant API responses |
+| 3 | Polling Engine | Write Queue | Value + timestamp | Values queued for asynchronous database writes |
+| 4 | Write Queue | TimescaleDB | Historical readings | Batched writes to time-series tables with automatic partitioning |
+| 5 | TimescaleDB | Aggregator | Raw data | Background worker computes hourly/daily aggregates |
+| 6 | Aggregator | Aggregate Tables | Rollup data | Pre-computed statistics for fast historical queries |
+| 7 | WebSocket Server | Subscribers | Real-time pushes | Live data pushed to connected clients via GraphQL subscriptions |
+
+### Component Specifications
+
+| Component | Implementation | Scaling Strategy | Failure Mode |
+|-----------|---------------|------------------|--------------|
+| API Gateway | Actix-web with async-graphql | Horizontal with load balancer | Circuit breaker degrades to read-only |
+| Protocol Adapters | Tokio tasks per PLC | Per-PLC task isolation | Exponential backoff, dead-letter queue |
+| Polling Engine | Async work queue | Dynamic task pool | Graceful degradation, priority queuing |
+| Redis Cache | Redis Cluster | Sharded by PLC ID | Cache miss falls back to Postgres |
+| Postgres | Primary + Replicas | Read replicas for queries | Write-ahead log for point-in-time recovery |
+| WebSocket Server | Connection per client | Sticky sessions | Reconnection with state recovery |
+
+### Network Topology
+
+| Zone | Components | Ports | Security |
+|------|------------|-------|----------|
+| **Factory DMZ** | PLCs • Protocol Adapters | 502 (Modbus) • 4840 (OPC-UA) • 102 (S7) • 44818 (EIP) | VLAN isolation • Allowlisted IPs • Read-only service accounts |
+| **Application Tier** | API Gateway • Polling Engine • Business Logic | 8080 (HTTP) • 8081 (Metrics) • 6379 (Redis) | Internal network • mTLS between services • JWT validation |
+| **Data Tier** | PostgreSQL • Redis | 5432 (Postgres) • 6379 (Redis) | Private subnet • Encrypted at rest • Backup replication |
+| **Client Access** | CDN • Load Balancer | 443 (HTTPS) • 80 (Redirect) | WAF • DDoS protection • API key validation |
+
+### Architecture Diagram
+
 ---
 
 ## API Documentation
