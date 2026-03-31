@@ -7,12 +7,8 @@
 
 > **Industrial APIs in minutes, not months** — Turn your PLCs into modern APIs instantly
 
-**Developer:** Newton Script  
+**Developer:** Newton Kamau
 **Platform:** Industrial IoT, PLC APIs  
-**Backend:** Rust  
-**Database:** Postgres  
-**Frontend:** Any client (GraphQL / REST / WebSocket)
-
 ---
 
 ## 📋 Table of Contents
