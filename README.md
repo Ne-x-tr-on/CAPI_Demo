@@ -1,6 +1,6 @@
 # CAPI (Control API)
 
-[Live Demo](https://CAPI-web-app.netlify.app)
+[Live Demo](https://CAPI-web-app.vercel.app)
 
 **Developer:** Newton Script  
 **Platform:** Industrial IoT, PLC APIs  
