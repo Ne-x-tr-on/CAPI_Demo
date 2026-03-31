@@ -13,34 +13,6 @@
 
 ---
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [How It Works](#how-it-works)
-- [Infrastructure Architecture](#infrastructure-architecture)
-- [API Documentation](#api-documentation)
-  - [Authentication](#authentication)
-  - [List All PLCs](#list-all-plcs)
-  - [Get PLC Tags (Live Values)](#get-plc-tags-live-values)
-  - [Read Single Tag Value](#read-single-tag-value)
-  - [Historical Queries](#historical-queries)
-  - [Real-time Subscriptions](#real-time-subscriptions)
-  - [Mutations](#mutations)
-- [Code Examples](#code-examples)
-  - [JavaScript/TypeScript](#javascripttypescript)
-  - [Python](#python)
-  - [cURL](#curl)
-  - [WebSocket](#websocket)
-- [Security](#security)
-- [Getting Started](#getting-started)
-- [Deployment](#deployment)
-- [Performance Benchmarks](#performance-benchmarks)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
-
----
-
 ## Overview
 
 CAPI is an industrial IoT platform that transforms your PLCs (Programmable Logic Controllers) into modern APIs in minutes. It allows querying live data, historical trends, and subscribing to real-time updates without any middleware. Type-safe GraphQL-like APIs are auto-generated from your PLC configuration, with all readings stored in Postgres for analytics and reporting.
