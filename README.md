@@ -1,3 +1,9 @@
+## Note on Source Code
+Due to intellectual property and ongoing development, the full source code is not included in this repository.
+
+This repository focuses on system design, architecture, and engineering decisions.
+
+
 # CAPI (Control API)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -6,10 +12,6 @@
 [![Live Demo](https://img.shields.io/badge/demo-live-green)](https://capi-web-api.vercel.app)
 
 > **Industrial APIs in minutes, not months** — Turn your PLCs into modern APIs instantly
-## Note on Source Code
-Due to intellectual property and ongoing development, the full source code is not included in this repository.
-
-This repository focuses on system design, architecture, and engineering decisions.
 
 **Developer:** Newton Kamau
 
